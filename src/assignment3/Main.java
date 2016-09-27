@@ -86,7 +86,7 @@ public class Main {
 			System.exit(1);
 		}
 		while (infile.hasNext()) {
-			words.add(infile.next().toUpperCase());
+			words.add(infile.next().toUpperCase()); //changes to all upper case
 		}
 		return words;
 	}
@@ -94,6 +94,25 @@ public class Main {
 	public static void printLadder(ArrayList<String> ladder) {
 		
 	}
+	
+	public static Set<String> getAllMutantsOfWord(String source){
+		Set<String> mutants= new HashSet<String>();
+		for (int i=0; i<source.length();i++){
+			for (char c='a';c<='z';c++){
+				//source.charAt(i) 
+			}
+		}
+		return mutants;
+	}
+	
+	/*public ... dfs(String source, String destination)
+	{
+		ArrayList<String> mutants= getAllMutantsOfWord(source);
+		for(int i=0; i<mutants.size(); i++)
+			if mutant.get(i);
+		
+	}*/
+	
 	// TODO
 	// Other private static methods here
 }
