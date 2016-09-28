@@ -50,10 +50,15 @@ public class Main {
 	 * @return ArrayList of 2 Strings containing start word and end word. 
 	 * If command is /quit, return empty ArrayList. 
 	 */
-	public static ArrayList<String> parse(Scanner keyboard) {
-		// TO DO
-		return null;
-	}
+    public static ArrayList<String> parse(Scanner keyboard) {
+        String[] input = keyboard.nextLine().trim().split("\\s+");
+        if(input.length == 1 && input[0].equalsIgnoreCase("\\quit")) {
+            return new ArrayList<String>();
+        } else if(input.length == 2) {
+            return (ArrayList<String>) Arrays.asList(input);
+        }
+        return null;
+    }
 	
     public static ArrayList<String> getWordLadderDFS(String start, String end) {
         
