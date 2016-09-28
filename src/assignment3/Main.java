@@ -75,7 +75,7 @@ public class Main {
 		return null; // replace this line later with real return
 	}
     
-	public static Set<String>  makeDictionary () {
+	public static Set<String> makeDictionary () {
 		Set<String> words = new HashSet<String>();
 		Scanner infile = null;
 		try {
@@ -106,6 +106,25 @@ public class Main {
 		}
 		return mutants;
 	}
+    
+    /**
+     * Generates next mutation of source word for DFS
+     * @param source
+     * @param visitedWords
+     * @return
+     */
+    public static String getNextMutantWord(String source, Set<String> visitedWords) {
+        for(int i = 0; i < source.length(); i++) {
+            for(char c = 'a'; c <= 'z'; c++) {
+                String ch = Character.toString(c);
+                String word = source.substring(0, i) + ch + source.substring(i+1);
+                if(!visitedWords.contains(word) && dictionary.contains(word)) {
+                    return word;
+                }
+            }
+        }
+        return "";
+    }
 	
 	/*public ... dfs(String source, String destination)
 	{
