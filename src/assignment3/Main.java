@@ -20,7 +20,7 @@ import java.io.*;
 public class Main {
 	
 	// static variables and constants only here.
-	
+	public static Set<String> Dictionary= makeDictionary ();
 	public static void main(String[] args) throws Exception {
 		
 		Scanner kb;	// input Scanner for commands
@@ -97,9 +97,11 @@ public class Main {
 	
 	public static Set<String> getAllMutantsOfWord(String source){
 		Set<String> mutants= new HashSet<String>();
-		for (int i=0; i<source.length();i++){
-			for (char c='a';c<='z';c++){
-				//source.charAt(i) 
+		char[] sw = source.toCharArray(); //change source word(sw) to a character array
+		for (int i=0; i<sw.length;i++){
+			char[] check=sw;		//reset word that is checked to source word 
+			for (char c='A';c<='Z';c++){
+				check[i]=c;
 			}
 		}
 		return mutants;
