@@ -1,14 +1,14 @@
 /* WORD LADDER Main.java
  * EE422C Project 3 submission by
  * Replace <...> with your actual data.
- * <Student1 Name>
- * <Student1 EID>
+ * Pranav Harathi
+ * sh44674
  * <Student1 5-digit Unique No.>
  * <Student2 Name>
  * <Student2 EID>
  * <Student2 5-digit Unique No.>
  * Slip days used: <0>
- * Git URL:
+ * Git URL: 
  * Fall 2016
  */
 
@@ -20,7 +20,7 @@ import java.io.*;
 public class Main {
 	
 	// static variables and constants only here.
-	public static Set<String> Dictionary= makeDictionary ();
+	public static Set<String> dictionary;
 	public static void main(String[] args) throws Exception {
 		
 		Scanner kb;	// input Scanner for commands
@@ -43,64 +43,118 @@ public class Main {
 		// initialize your static variables or constants here.
 		// We will call this method before running our JUNIT tests.  So call it 
 		// only once at the start of main.
+		dictionary = makeDictionary();
 	}
 	
 	/**
 	 * @param keyboard Scanner connected to System.in
 	 * @return ArrayList of 2 Strings containing start word and end word. 
-	 * If command is /quit, return empty ArrayList. 
+	 * If command is /quit, quit the program. 
 	 */
-    public static ArrayList<String> parse(Scanner keyboard) {
-        String[] input = keyboard.nextLine().trim().split("\\s+");
-        if(input.length == 1 && input[0].equalsIgnoreCase("\\quit")) {
-            return new ArrayList<String>();
-        } else if(input.length == 2) {
-            return (ArrayList<String>) Arrays.asList(input);
-        }
-        return null;
-    }
+	public static ArrayList<String> parse(Scanner keyboard) {
+		String[] input = keyboard.nextLine().trim().split("\\s+");
+		if(input.length == 1 && input[0].equalsIgnoreCase("\\quit")) {
+			System.exit(0);
+		} else if(input.length == 2) {
+			return (ArrayList<String>) Arrays.asList(input);
+		}
+		return null;
+	}
 	
-    public static ArrayList<String> getWordLadderDFS(String start, String end) {
-        
-        // Returned list should be ordered start to end.  Include start and end.
-        // Return empty list if no ladder.
-        // TODO some code
-        Set<String> dict = makeDictionary();
-        // TODO more code
-        Set<String> visited = new HashSet<>();
-        ArrayList<String> path = new ArrayList<>();
-        path.add(start);
-        DFShelper(start, end, visited, path);
-        //System.out.println(path);
-        return path; // replace this line later with real return
-    }
-    
-    public static void DFShelper(String input, String end, Set<String> visited, ArrayList<String> path) {
-        //System.out.println(input);
-        if(input.equalsIgnoreCase(end)) {
-            System.out.println("success!");
-            return;
-        }
-        visited.add(input);
-        int[] differences = getDifferentIndices(input, end);
-        String nextInput = getNextMutantWord(input, visited, differences);
-        if(nextInput.equals("")) {
-            //System.out.println(path);
-            //path.remove(path.size()-1);
-            DFShelper(path.remove(path.size()-1), end, visited, path);
-        } else {
-            path.add(nextInput);
-            DFShelper(nextInput, end, visited, path);
-        }
-    }
-	
-    public static ArrayList<String> getWordLadderBFS(String start, String end) {
+    /**
+	 * Generates a word ladder using DFS with one heuristic (pruning neighbors
+	 * by only generating neighbors where the indices between an input word and the
+	 * goal word have different chars) and randomizes the order of neighbor generation
+	 * @param start
+	 * @param end
+	 * @return
+	 */
+	public static ArrayList<String> getWordLadderDFS(String start, String end) {
 		
+		// Returned list should be ordered start to end.  Include start and end.
+		// Return empty list if no ladder.
 		// TODO some code
 		Set<String> dict = makeDictionary();
 		// TODO more code
+		Set<String> visited = new HashSet<>();
+		ArrayList<String> path = new ArrayList<>();
+		try {
+			path.add(start);
+			DFShelper(start, end, visited, path);
+		} catch (StackOverflowError e) {
+			path.clear();
+			path.add(end);
+			DFShelper(end, start, visited, path);
+			Collections.reverse(path);
+		}
+		return path;
+	}
+    
+    public static void DFShelper(String input, String end, Set<String> visited, ArrayList<String> path) {
+		if(input.equalsIgnoreCase(end)) {
+			return;
+		}
+		visited.add(input);
+		int[] differences = getDifferentIndices(input, end);
+		String nextInput = getNextMutantWord(input, visited, differences);
+		if(nextInput.equals("")) {
+			if(path.isEmpty())
+				return;
+			DFShelper(path.remove(path.size()-1), end, visited, path);
+		} else {
+			path.add(nextInput);
+			DFShelper(nextInput, end, visited, path);
+		}
+	}
+	
+    /**
+	 * Uses the BFS algorithm to search for a word ladder
+	 * Generates all neighbors dynamically and uses the WordNode class for pathfinding
+	 * @param start
+	 * @param end
+	 * @return
+	 */
+    public static ArrayList<String> getWordLadderBFS(String start, String end) {
 		
-		return null; // replace this line later with real return
+    	// Initialize data structures to track info
+		Queue<WordNode> bfsQ = new LinkedList<>();
+		Set<String> visited = new HashSet<>();		
+		ArrayList<String> path = new ArrayList<>();
+		
+		WordNode startNode = new WordNode(start);
+    	bfsQ.offer(startNode);
+    
+    	WordNode endNode = null;
+    	
+    	// search logic
+    	outerLoop:
+    	while(!bfsQ.isEmpty()) {
+    		WordNode current = bfsQ.poll();
+    		visited.add(current.value);
+    		int[] differences = getDifferentIndices(current.value, end);
+    		Set<String> neighbors = getAllMutantsOfWord(current.value, end, visited, differences);
+    		for(String n : neighbors) {
+    			WordNode temp = new WordNode(n);
+    			temp.parent = current;
+    			if(n.equals(end)) {
+    				endNode = temp;
+    				break outerLoop;
+    			}
+    			bfsQ.offer(temp);
+    		}
+    	}
+    	
+    	if(endNode == null)
+    		return new ArrayList<String>();
+    	
+    	// backtrack to find path
+    	WordNode c = endNode;
+    	path.add(endNode.value);
+    	while((c = c.parent) != null) {
+    		path.add(0, c.value);
+    	}
+    	
+		return path; // replace this line later with real return
 	}
     
 	public static Set<String> makeDictionary () {
@@ -123,40 +177,51 @@ public class Main {
 		
 	}
 	
-	public static Set<String> getAllMutantsOfWord(String source){
-		Set<String> mutants= new HashSet<String>();
-		char[] sw = source.toCharArray(); //change source word(sw) to a character array
-		for (int i=0; i<sw.length;i++){
-			char[] check=sw;		//reset word that is checked to source word 
-			for (char c='A';c<='Z';c++){
-				check[i]=c;
+	/**
+	 * Generates all possible neighbors of word in dictionary (optimized)
+	 * @param source
+	 * @param visitedWords
+	 * @param diffs
+	 * @return
+	 */
+	public static Set<String> getAllMutantsOfWord(String source, String end, Set<String> visitedWords, int[] diffs){
+		Set<String> mutants = new HashSet<String>();
+		for (int i = 0; i < source.length(); i++) {
+			if(diffs[i] == 0) continue;
+			for(char c = 'a'; c <= 'z'; c++) {
+				String ch = Character.toString(c);
+				String word = source.substring(0, i) + ch + source.substring(i+1);
+				if(word.equals(source)) continue;
+				if(!visitedWords.contains(word) && dictionary.contains(word.toUpperCase())) {
+					mutants.add(word);
+				}
 			}
 		}
 		return mutants;
 	}
     
     /**
-     * Generates next mutation of source word for DFS
-     * @param source
-     * @param visitedWords
-     * @return
-     */
-    public static String getNextMutantWord(String source, Set<String> visitedWords, int[] diffs) {
-        List<Integer> randomizedIndices = randomizedNums(source.length(), 0);
-        for(int i : randomizedIndices) {
-            if(diffs[i] == 0) continue;
-            List<Integer> randomizedChars = randomizedNums(26, (int)'a');
-            for(Integer c : randomizedChars) {
-                String ch = Character.toString((char) c.intValue());
-                String word = source.substring(0, i) + ch + source.substring(i+1);
-                if(!visitedWords.contains(word) && dictionary.contains(word.toUpperCase())) {
-                    return word;
-                }
-            }
-            System.out.println();
-        }
-        return "";
-    }
+	 * Generates next mutation of source word for DFS
+	 * @param source
+	 * @param visitedWords
+	 * @return
+	 */
+	public static String getNextMutantWord(String source, Set<String> visitedWords, int[] diffs) {
+		List<Integer> randomizedIndices = randomizedNums(source.length(), 0);
+		for(int i : randomizedIndices) {
+			if(diffs[i] == 0) continue;
+			List<Integer> randomizedChars = randomizedNums(26, (int)'a');
+			for(Integer c : randomizedChars) {
+				String ch = Character.toString((char) c.intValue());
+				String word = source.substring(0, i) + ch + source.substring(i+1);
+				if(word.equals(source)) continue;
+				if(!visitedWords.contains(word) && dictionary.contains(word.toUpperCase())) {
+					return word;
+				}
+			}
+		}
+		return "";
+	}
 
 	/**
 	 * DFS heuristic that limits search for mutant words to only include the indices of
@@ -174,8 +239,7 @@ public class Main {
 	}
 	
 	/**
-	 * DFS heuristic to introduce randomization and slightly improve performance 
-	 * for worst case
+	 * DFS randomization for neighbors in different order
 	 * @return
 	 */
 	public static List<Integer> randomizedNums(int size, int add) {
@@ -186,7 +250,5 @@ public class Main {
 		Collections.shuffle(randomizedNums);
 		return randomizedNums;
 	}
-	
-	// TODO
-	// Other private static methods here
 }
+
