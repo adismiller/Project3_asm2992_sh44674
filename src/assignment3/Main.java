@@ -1,17 +1,17 @@
-/* WORD LADDER Main.java
+/**
+ * WORD LADDER Main.java
  * EE422C Project 3 submission by
  * Replace <...> with your actual data.
  * Pranav Harathi
  * sh44674
- * <Student1 5-digit Unique No.>
- * <Student2 Name>
- * <Student2 EID>
- * <Student2 5-digit Unique No.>
+ * 16460
+ * Adi Miller
+ * asm2992
+ * 16480
  * Slip days used: <0>
- * Git URL: 
+ * Git URL: https://github.com/adismiller/Project3_asm2992_sh44674
  * Fall 2016
  */
-
 
 package assignment3;
 import java.util.*;
@@ -21,6 +21,8 @@ public class Main {
 	
 	// static variables and constants only here.
 	public static Set<String> dictionary;
+	public static String startWord;
+	public static String endWord;
 	public static void main(String[] args) throws Exception {
 		
 		Scanner kb;	// input Scanner for commands
@@ -35,7 +37,6 @@ public class Main {
 			ps = System.out;			// default to Stdout
 		}
 		initialize();
-		
 		// TODO methods to read in words, output ladder
 	}
 	
@@ -61,7 +62,7 @@ public class Main {
 		return null;
 	}
 	
-    /**
+	/**
 	 * Generates a word ladder using DFS with one heuristic (pruning neighbors
 	 * by only generating neighbors where the indices between an input word and the
 	 * goal word have different chars) and randomizes the order of neighbor generation
@@ -70,12 +71,10 @@ public class Main {
 	 * @return
 	 */
 	public static ArrayList<String> getWordLadderDFS(String start, String end) {
-		
 		// Returned list should be ordered start to end.  Include start and end.
 		// Return empty list if no ladder.
-		// TODO some code
-		Set<String> dict = makeDictionary();
-		// TODO more code
+		Main.startWord = start;
+		Main.endWord = end;
 		Set<String> visited = new HashSet<>();
 		ArrayList<String> path = new ArrayList<>();
 		try {
@@ -87,10 +86,17 @@ public class Main {
 			DFShelper(end, start, visited, path);
 			Collections.reverse(path);
 		}
-		return path;
+		return path; 
 	}
-    
-    public static void DFShelper(String input, String end, Set<String> visited, ArrayList<String> path) {
+	
+	/**
+	 * Helper method that implements actual recursion
+	 * @param input
+	 * @param end
+	 * @param visited
+	 * @param path
+	 */
+	public static void DFShelper(String input, String end, Set<String> visited, ArrayList<String> path) {
 		if(input.equalsIgnoreCase(end)) {
 			return;
 		}
@@ -107,7 +113,8 @@ public class Main {
 		}
 	}
 	
-    /**
+
+	/**
 	 * Uses the BFS algorithm to search for a word ladder
 	 * Generates all neighbors dynamically and uses the WordNode class for pathfinding
 	 * @param start
@@ -132,7 +139,7 @@ public class Main {
     		WordNode current = bfsQ.poll();
     		visited.add(current.value);
     		int[] differences = getDifferentIndices(current.value, end);
-    		Set<String> neighbors = getAllMutantsOfWord(current.value, end, visited, differences);
+    		Set<String> neighbors = getAllMutantsOfWord(current.value, visited, differences);
     		for(String n : neighbors) {
     			WordNode temp = new WordNode(n);
     			temp.parent = current;
@@ -157,11 +164,15 @@ public class Main {
 		return path; // replace this line later with real return
 	}
     
+    /**
+     * Makes the dictionary set
+     * @return
+     */
 	public static Set<String> makeDictionary () {
 		Set<String> words = new HashSet<String>();
 		Scanner infile = null;
 		try {
-			infile = new Scanner (new File("five_letter_words.txt"));
+			infile = new Scanner(new File("five_letter_words.txt"));
 		} catch (FileNotFoundException e) {
 			System.out.println("Dictionary File not Found!");
 			e.printStackTrace();
@@ -173,8 +184,20 @@ public class Main {
 		return words;
 	}
 	
+	/**
+	 * Prints out ladder of words in specified format
+	 * @param ladder
+	 */
 	public static void printLadder(ArrayList<String> ladder) {
-		
+		if(ladder.isEmpty()) {
+			System.out.printf("no word ladder can be found between %s and %s\n", startWord, endWord);
+		} else {
+			int size = ladder.size() - 2;
+			System.out.printf("a %d-rung word ladder exists between %s and %s\n", size, startWord, endWord);
+			for(String s : ladder) {
+				System.out.println(s);
+			}
+		}
 	}
 	
 	/**
@@ -184,7 +207,7 @@ public class Main {
 	 * @param diffs
 	 * @return
 	 */
-	public static Set<String> getAllMutantsOfWord(String source, String end, Set<String> visitedWords, int[] diffs){
+	public static Set<String> getAllMutantsOfWord(String source, Set<String> visitedWords, int[] diffs){
 		Set<String> mutants = new HashSet<String>();
 		for (int i = 0; i < source.length(); i++) {
 			if(diffs[i] == 0) continue;
@@ -199,8 +222,8 @@ public class Main {
 		}
 		return mutants;
 	}
-    
-    /**
+	
+	/**
 	 * Generates next mutation of source word for DFS
 	 * @param source
 	 * @param visitedWords
@@ -222,7 +245,7 @@ public class Main {
 		}
 		return "";
 	}
-
+	
 	/**
 	 * DFS heuristic that limits search for mutant words to only include the indices of
 	 * the string that are different
@@ -252,3 +275,16 @@ public class Main {
 	}
 }
 
+/**
+ * Class for BFS that includes parent node reference and String value
+ * @author pranavh
+ *
+ */
+class WordNode {
+	WordNode parent;
+	String value;
+	public WordNode(String value) {
+		this.value = value;
+		parent = null;
+	}
+}
